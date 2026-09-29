@@ -6,6 +6,108 @@ Khác với một website bán linh kiện thông thường, hệ thống không
 
 ---
 
+## 🧰 Công nghệ sử dụng
+
+Dự án được xây dựng **chủ yếu bằng Node.js**.
+
+### Backend
+
+- **Node.js** — nền tảng chính của hệ thống.
+- **Express.js** — xây dựng web server và REST API.
+- **MySQL** — lưu trữ sản phẩm, người dùng, cấu hình PC, đơn hàng và dữ liệu benchmark.
+- **mysql2** hoặc ORM phù hợp — kết nối Node.js với MySQL.
+- **REST API** — giao tiếp giữa giao diện và backend.
+
+### Frontend
+
+Giai đoạn đầu ưu tiên đơn giản, dễ triển khai:
+
+- HTML
+- CSS
+- JavaScript
+- Có thể sử dụng **EJS** để render giao diện phía server.
+
+Nếu dự án mở rộng, frontend có thể được tách riêng bằng React/Vue nhưng **Node.js + Express vẫn là backend chính**.
+
+### Logic mô phỏng
+
+Các chức năng sau được xử lý chủ yếu ở backend Node.js:
+
+- Kiểm tra tương thích linh kiện.
+- Tính tổng công suất.
+- Tính điểm cấu hình.
+- Phân tích bottleneck CPU/GPU/RAM/PSU.
+- Đánh giá mức độ mất cân bằng.
+- Tìm linh kiện thay thế trong database.
+- Gợi ý nâng cấp theo ngân sách.
+- Gợi ý cấu hình theo nhu cầu sử dụng.
+
+Phiên bản đầu ưu tiên **rule-based algorithm** và dữ liệu benchmark thay vì phụ thuộc vào AI.
+
+---
+
+## 🏗️ Kiến trúc dự kiến
+
+Dự án có thể tổ chức theo mô hình MVC:
+
+```text
+BanVaMoPhongpc/
+│
+├── app.js
+├── package.json
+│
+├── config/
+│   └── database.js
+│
+├── controllers/
+│   ├── productController.js
+│   ├── buildController.js
+│   ├── simulationController.js
+│   ├── orderController.js
+│   └── userController.js
+│
+├── models/
+│   ├── productModel.js
+│   ├── userModel.js
+│   ├── buildModel.js
+│   └── orderModel.js
+│
+├── routes/
+│   ├── productRoutes.js
+│   ├── buildRoutes.js
+│   ├── simulationRoutes.js
+│   ├── orderRoutes.js
+│   └── userRoutes.js
+│
+├── services/
+│   ├── compatibilityService.js
+│   ├── bottleneckService.js
+│   ├── recommendationService.js
+│   └── powerService.js
+│
+├── views/
+│
+├── public/
+│   ├── css/
+│   ├── js/
+│   └── images/
+│
+└── database/
+    └── schema.sql
+```
+
+### Vai trò các lớp
+
+- **Routes**: nhận request và định tuyến.
+- **Controllers**: xử lý request/response.
+- **Models**: truy vấn MySQL.
+- **Services**: chứa logic mô phỏng PC, bottleneck và recommendation.
+- **Views/Public**: giao diện website.
+
+Việc tách `services/` giúp phần thuật toán mô phỏng không bị trộn với code CRUD bán hàng.
+
+---
+
 ## 🎯 Mục tiêu dự án
 
 Xây dựng một website hỗ trợ người dùng:
@@ -469,7 +571,19 @@ Admin có thể:
 
 ## 🧮 Ý tưởng thuật toán Bottleneck
 
-Phiên bản đầu có thể sử dụng **rule-based system** thay vì AI.
+Phiên bản đầu có thể sử dụng **rule-based system viết bằng JavaScript chạy trên Node.js** thay vì AI.
+
+Phần thuật toán nên được tách riêng, ví dụ:
+
+```text
+services/
+├── compatibilityService.js
+├── bottleneckService.js
+├── recommendationService.js
+└── powerService.js
+```
+
+Controller chỉ nhận cấu hình từ người dùng rồi gọi các service tương ứng.
 
 Ví dụ:
 
