@@ -1,8 +1,6 @@
-// Kết nối CSDL. File gốc dùng mysql2; ở đây dùng SQLite (thư viện sql.js, chạy thuần JavaScript).
-// Cách dùng giống mysql2: const [rows] = await db.execute("SELECT ... WHERE id = ?", [id]);
+// Kết nối CSDL.
 //  - Câu SELECT  -> trả về [mảng các dòng]
 //  - Câu INSERT/UPDATE/DELETE -> trả về [{ insertId, affectedRows }]
-// Dữ liệu được lưu vào file backend/data/kada.db sau mỗi lần thay đổi.
 const initSqlJs = require("sql.js");
 const fs = require("fs");
 const path = require("path");
@@ -65,7 +63,6 @@ async function execute(sql, params = []) {
   return [{ insertId, affectedRows }];
 }
 
-// Giống pool.getConnection() của mysql2, dùng cho giao dịch (đặt hàng).
 async function getConnection() {
   return {
     execute,
