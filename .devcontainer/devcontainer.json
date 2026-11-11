@@ -1,0 +1,6 @@
+{
+  "name": "KaDa Store",
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/bin"
+  }
+}
