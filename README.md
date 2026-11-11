@@ -1,790 +1,205 @@
-# 🖥️ Bán Linh Kiện & Mô Phỏng PC
+# 🖥️ KaDa Store - Bán Linh Kiện & PC Build Sẵn
 
-Website bán linh kiện máy tính kết hợp công cụ **xây dựng và mô phỏng cấu hình PC**.
+Website bán linh kiện máy tính và PC build sẵn, có công cụ **PC Builder** tự kiểm tra tương thích linh kiện và **trợ lý tư vấn** gợi ý bộ PC theo ngân sách.
 
-Khác với một website bán linh kiện thông thường, hệ thống không chỉ giúp người dùng chọn và mua sản phẩm mà còn hỗ trợ kiểm tra khả năng tương thích giữa các linh kiện, mô phỏng hiệu năng của cấu hình và dự đoán **bottleneck (nghẽn cổ chai)**. Từ kết quả phân tích, hệ thống sẽ đưa ra các gợi ý thay đổi hoặc nâng cấp linh kiện phù hợp.
+Dự án phát triển từ bài mẫu **Computer-store** (Node.js + Express + EJS + MySQL), nay tách thành **frontend React** và **backend Express** giao tiếp qua REST API, xác thực bằng **JWT**.
 
----
-
-## 🧰 Công nghệ sử dụng
-
-Dự án được xây dựng **chủ yếu bằng Node.js**.
-
-### Backend
-
-- **Node.js** — nền tảng chính của hệ thống.
-- **Express.js** — xây dựng web server và REST API.
-- **MySQL** — lưu trữ sản phẩm, người dùng, cấu hình PC, đơn hàng và dữ liệu benchmark.
-- **mysql2** hoặc ORM phù hợp — kết nối Node.js với MySQL.
-- **REST API** — giao tiếp giữa giao diện và backend.
-
-### Frontend
-
-Giai đoạn đầu ưu tiên đơn giản, dễ triển khai:
-
-- HTML
-- CSS
-- JavaScript
-- Có thể sử dụng **EJS** để render giao diện phía server.
-
-Nếu dự án mở rộng, frontend có thể được tách riêng bằng React/Vue nhưng **Node.js + Express vẫn là backend chính**.
-
-### Logic mô phỏng
-
-Các chức năng sau được xử lý chủ yếu ở backend Node.js:
-
-- Kiểm tra tương thích linh kiện.
-- Tính tổng công suất.
-- Tính điểm cấu hình.
-- Phân tích bottleneck CPU/GPU/RAM/PSU.
-- Đánh giá mức độ mất cân bằng.
-- Tìm linh kiện thay thế trong database.
-- Gợi ý nâng cấp theo ngân sách.
-- Gợi ý cấu hình theo nhu cầu sử dụng.
-
-Phiên bản đầu ưu tiên **rule-based algorithm** và dữ liệu benchmark thay vì phụ thuộc vào AI.
+- Trang web (GitHub Pages): https://kany2006.github.io/BanVaMoPhongpc/
+- Ý tưởng mở rộng (2D PC Builder, bottleneck): xem [IDEA_2D_PC_BUILDER_SIMULATION.md](IDEA_2D_PC_BUILDER_SIMULATION.md)
 
 ---
 
-## 🏗️ Kiến trúc dự kiến
+## ✨ Chức năng hiện có
 
-Dự án có thể tổ chức theo mô hình MVC:
+**Khách hàng**
+- Xem, tìm kiếm, lọc theo danh mục và sắp xếp theo giá sản phẩm.
+- Xem chi tiết sản phẩm và thông số kỹ thuật.
+- **PC Build sẵn** theo 4 phân khúc: Rẻ nhất (~15 triệu), Trung bình (~25 triệu), Cao cấp (~50 triệu), VIP Pro (~100 triệu).
+- **PC Builder**: chọn CPU, Mainboard, RAM, GPU, SSD, PSU. Hệ thống lọc linh kiện tương thích và cảnh báo:
+  - CPU và Mainboard phải cùng socket.
+  - RAM phải đúng chuẩn DDR của Mainboard.
+  - Nguồn (PSU) phải đủ công suất cho card đồ họa.
+- **Trợ lý tư vấn**: người dùng gõ nhu cầu hoặc ngân sách (ví dụ "PC chơi game khoảng 25 triệu"), hệ thống đề xuất bộ PC phù hợp. Đây là thuật toán dựa trên từ khóa (rule-based), không dùng AI.
+- Giỏ hàng (lưu trên trình duyệt), đặt hàng, xem lịch sử đơn hàng.
+- Đăng ký, đăng nhập.
+
+**Quản trị (admin)**
+- Tổng quan: doanh thu, số đơn, đơn chờ duyệt, sản phẩm sắp hết hàng.
+- Quản lý sản phẩm: thêm, sửa, xóa.
+- Quản lý đơn hàng: đổi trạng thái (Chờ duyệt, Đang giao, Hoàn tất, Đã hủy). Hủy đơn thì tồn kho được cộng lại.
+
+---
+
+## 🧰 Công nghệ
+
+| Phần | Công nghệ |
+|---|---|
+| Frontend | React 19, Vite, React Router (HashRouter), CSS thuần |
+| Backend | Node.js (CommonJS), Express 5, kiến trúc MVC |
+| Cơ sở dữ liệu | SQLite (thư viện `sql.js`, chạy thuần JavaScript, không cần cài thêm) |
+| Xác thực | JWT (`jsonwebtoken`), token gửi qua header `Authorization: Bearer ...` |
+| Test | `node:test` có sẵn trong Node (47 test) |
+| CI/CD | GitHub Actions: chạy test và deploy frontend lên GitHub Pages |
+
+---
+
+## 🏗️ Cấu trúc thư mục
 
 ```text
 BanVaMoPhongpc/
+├── package.json                 chạy cả hai phần bằng một lệnh
+├── .github/workflows/
+│   ├── test.yml                 tự chạy test khi push
+│   └── pages.yml                tự deploy frontend lên GitHub Pages
 │
-├── app.js
-├── package.json
+├── backend/                     Express API (MVC)
+│   ├── app.js                   điểm vào, gắn routes
+│   ├── database/
+│   │   ├── schema.sql           cấu trúc bảng
+│   │   └── seed.sql             dữ liệu mẫu
+│   ├── src/
+│   │   ├── config/              DBConnection.js, AuthFilter.js (JWT)
+│   │   ├── models/              User, Product, Order, PCBuilder (chứa SQL)
+│   │   ├── controllers/         Auth, Home, Product, Cart, PCBuilder, Chat, Admin
+│   │   └── routes/              web.js (khách), admin.js (quản trị)
+│   └── test/                    47 test
 │
-├── config/
-│   └── database.js
-│
-├── controllers/
-│   ├── productController.js
-│   ├── buildController.js
-│   ├── simulationController.js
-│   ├── orderController.js
-│   └── userController.js
-│
-├── models/
-│   ├── productModel.js
-│   ├── userModel.js
-│   ├── buildModel.js
-│   └── orderModel.js
-│
-├── routes/
-│   ├── productRoutes.js
-│   ├── buildRoutes.js
-│   ├── simulationRoutes.js
-│   ├── orderRoutes.js
-│   └── userRoutes.js
-│
-├── services/
-│   ├── compatibilityService.js
-│   ├── bottleneckService.js
-│   ├── recommendationService.js
-│   └── powerService.js
-│
-├── views/
-│
-├── public/
-│   ├── css/
-│   ├── js/
-│   └── images/
-│
-└── database/
-    └── schema.sql
+└── frontend/                    React (Vite)
+    ├── index.html
+    ├── public/uploads/          ảnh sản phẩm
+    └── src/
+        ├── main.jsx, App.jsx    điểm vào và bảng đường dẫn
+        ├── pages/               Home, Products, ProductDetail, Cart, PCBuilder,
+        │                        Orders, Login, Register, NotFound, admin/*
+        ├── components/          Header, Footer, ProductCard, Chatbot, Logo, AdminSidebar
+        ├── context/             AuthContext (đăng nhập), CartContext (giỏ hàng)
+        ├── services/api.js      mọi lời gọi tới backend, tự gắn token JWT
+        └── styles/              style.css, admin.css
 ```
 
-### Vai trò các lớp
-
-- **Routes**: nhận request và định tuyến.
-- **Controllers**: xử lý request/response.
-- **Models**: truy vấn MySQL.
-- **Services**: chứa logic mô phỏng PC, bottleneck và recommendation.
-- **Views/Public**: giao diện website.
-
-Việc tách `services/` giúp phần thuật toán mô phỏng không bị trộn với code CRUD bán hàng.
-
----
-
-## 🎯 Mục tiêu dự án
-
-Xây dựng một website hỗ trợ người dùng:
-
-- Tìm kiếm và mua linh kiện PC.
-- Tự xây dựng một bộ PC từ các linh kiện đang được bán trên website.
-- Kiểm tra tính tương thích giữa các linh kiện.
-- Mô phỏng tương đối hiệu năng của cấu hình.
-- Phát hiện linh kiện có khả năng gây bottleneck.
-- Giải thích nguyên nhân gây bottleneck.
-- Đưa ra phương án thay thế hoặc nâng cấp linh kiện.
-- Gợi ý cấu hình phù hợp với ngân sách và nhu cầu sử dụng.
-
----
-
-## 💡 Ý tưởng chính
-
-Luồng sử dụng cơ bản:
-
+### Luồng một request (ví dụ đặt hàng)
 ```text
-Chọn linh kiện
-      ↓
-Tạo cấu hình PC
-      ↓
-Kiểm tra tương thích
-      ↓
-Mô phỏng hiệu năng
-      ↓
-Phân tích bottleneck
-      ↓
-Đưa ra cảnh báo
-      ↓
-Gợi ý cách khắc phục / nâng cấp
-      ↓
-Hoàn thiện cấu hình và đặt mua
+Cart.jsx → services/api.js (gắn token) → POST /api/checkout
+  → routes/web.js → AuthFilter.requireLogin (kiểm tra JWT)
+  → CartController.checkout → OrderModel.create → DBConnection → SQLite
 ```
-
-Ví dụ:
-
-> Người dùng chọn một CPU tầm trung nhưng ghép với GPU quá mạnh.
-
-Hệ thống có thể đưa ra kết quả:
-
-```text
-⚠ Có khả năng xảy ra bottleneck ở CPU.
-
-CPU hiện tại có thể giới hạn hiệu năng của GPU
-trong các tác vụ hoặc game phụ thuộc nhiều vào CPU.
-
-Gợi ý:
-- Nâng cấp CPU.
-- Chọn GPU thấp hơn để cân bằng chi phí.
-- Giữ cấu hình hiện tại nếu chủ yếu chơi game ở độ phân giải cao.
-```
+- **Routes** ghép đường dẫn với controller.
+- **Controllers** nhận request, gọi model, trả JSON.
+- **Models** chứa toàn bộ câu SQL.
+- Giỏ hàng nằm ở trình duyệt; khi đặt hàng, server tự lấy giá và tồn kho từ database nên không tin giá do client gửi.
 
 ---
 
-## 🛒 1. Website bán linh kiện PC
+## 🚀 Chạy dự án
 
-Website quản lý và bán các nhóm sản phẩm như:
+Yêu cầu: **Node.js 18 trở lên**.
 
-- CPU
-- GPU / Card đồ họa
-- Mainboard
-- RAM
-- SSD / HDD
-- PSU / Nguồn
-- Case
-- Tản nhiệt
-- Màn hình
-- Các phụ kiện khác
+```bash
+git clone https://github.com/KaNy2006/BanVaMoPhongpc.git
+cd BanVaMoPhongpc
 
-Mỗi sản phẩm có thể bao gồm:
+npm run install:all     # cài thư viện cho backend, frontend và thư mục gốc
+npm run dev             # chạy cả backend và frontend
+```
 
-- Tên sản phẩm
-- Hãng sản xuất
-- Giá
-- Hình ảnh
-- Thông số kỹ thuật
-- Tình trạng hàng
-- Bảo hành
-- Mô tả
-- Nhóm sản phẩm
-- Các thuộc tính dùng để kiểm tra tương thích và mô phỏng
-
----
-
-## 🧩 2. PC Builder
-
-Người dùng có thể chọn linh kiện trực tiếp từ sản phẩm đang bán trên website để tạo thành một cấu hình hoàn chỉnh.
-
-Ví dụ:
-
-| Thành phần | Linh kiện |
+| Thành phần | Địa chỉ |
 |---|---|
-| CPU | AMD Ryzen 5 7600 |
-| GPU | RTX 4070 |
-| Mainboard | B650 |
-| RAM | 32GB DDR5 |
-| SSD | 1TB NVMe |
-| PSU | 750W |
-| Case | Mid Tower |
+| Frontend (mở địa chỉ này để xem web) | http://localhost:5173 |
+| Backend API | http://localhost:4000/api |
 
-Hệ thống tự động tính:
+> Mở thẳng `http://localhost:4000` sẽ thấy "Cannot GET /". Đây là bình thường vì backend chỉ trả dữ liệu ở các đường dẫn `/api/...`. Thử `http://localhost:4000/api/products`.
 
-- Tổng giá cấu hình.
-- Tổng công suất ước tính.
-- Khả năng tương thích.
-- Mức cân bằng giữa các linh kiện.
-
----
-
-## 🔌 3. Kiểm tra tương thích linh kiện
-
-Trước khi mô phỏng hiệu năng, hệ thống kiểm tra các lỗi cơ bản trong cấu hình.
-
-### CPU ↔ Mainboard
-
-Kiểm tra:
-
-- Socket.
-- Chipset.
-- Khả năng hỗ trợ CPU.
-- Các giới hạn liên quan nếu có.
-
-### RAM ↔ Mainboard
-
-Kiểm tra:
-
-- DDR4 / DDR5.
-- Dung lượng hỗ trợ.
-- Số khe RAM.
-- Bus RAM.
-
-### GPU ↔ Case
-
-Kiểm tra:
-
-- Kích thước card.
-- Không gian lắp đặt.
-
-### PSU ↔ Cấu hình
-
-Kiểm tra:
-
-- Công suất nguồn.
-- Mức tiêu thụ điện ước tính.
-- Khoảng công suất dự phòng.
-
-### Tản nhiệt ↔ CPU / Case
-
-Kiểm tra:
-
-- Socket hỗ trợ.
-- Khả năng đáp ứng mức nhiệt.
-- Kích thước tản nhiệt.
-
----
-
-## 📊 4. Mô phỏng cấu hình
-
-Sau khi cấu hình hợp lệ, hệ thống sử dụng thông số của từng linh kiện để tạo ra đánh giá tương đối.
-
-Một số yếu tố có thể được sử dụng:
-
-### CPU
-
-- Số nhân / luồng.
-- Xung nhịp.
-- Kiến trúc.
-- Cache.
-- Điểm benchmark tham khảo.
-
-### GPU
-
-- VRAM.
-- Kiến trúc.
-- Điểm benchmark.
-- Hiệu năng rasterization.
-- Khả năng xử lý ở các độ phân giải khác nhau.
-
-### RAM
-
-- Dung lượng.
-- Bus.
-- Số channel.
-
-### Storage
-
-- Loại ổ cứng.
-- Chuẩn kết nối.
-- Tốc độ đọc / ghi.
-
-### PSU
-
-- Công suất.
-- Hiệu suất.
-- Mức công suất dự phòng.
-
-Kết quả mô phỏng không nhằm thay thế benchmark thực tế mà dùng để **so sánh, cảnh báo và hỗ trợ người dùng chọn cấu hình hợp lý hơn**.
-
----
-
-## 🚧 5. Phân tích Bottleneck
-
-Bottleneck xảy ra khi một thành phần trong hệ thống giới hạn khả năng hoạt động của các thành phần khác.
-
-Ví dụ:
-
-```text
-CPU yếu + GPU mạnh
-        ↓
-CPU xử lý không kịp
-        ↓
-GPU không được sử dụng hết
-        ↓
-Hiệu năng thực tế thấp hơn khả năng của GPU
+Chạy riêng từng phần:
+```bash
+cd backend  && npm install && npm start
+cd frontend && npm install && npm run dev
 ```
 
-Hệ thống sẽ phân tích các mối quan hệ như:
+Cơ sở dữ liệu tự tạo ở `backend/data/kada.db` từ `schema.sql` và `seed.sql` khi chạy lần đầu. Muốn đưa dữ liệu về ban đầu: tắt backend, xóa file `backend/data/kada.db`, chạy lại.
 
-- CPU ↔ GPU
-- CPU ↔ RAM
-- GPU ↔ độ phân giải
-- RAM ↔ workload
-- Storage ↔ tác vụ
-- PSU ↔ tổng công suất
+### Tài khoản mẫu
+| Vai trò | Email | Mật khẩu |
+|---|---|---|
+| Admin (vào `/#/admin`) | admin@store.test | admin123 |
+| Khách hàng | user@store.test | user123 |
+
+> Mật khẩu hiện lưu chữ thường để đơn giản hóa bài học. Không dùng mật khẩu thật.
 
 ---
 
-## 🧠 6. Dự đoán mức độ Bottleneck
+## 🧪 Chạy test
 
-Kết quả có thể được chia thành nhiều mức:
+```bash
+npm test
+```
+Kết quả đúng: `# pass 47`, `# fail 0`. Test dùng database trong bộ nhớ nên không ảnh hưởng dữ liệu thật.
 
-| Mức | Ý nghĩa |
+---
+
+## 🔌 API chính
+
+| Phương thức | Đường dẫn | Quyền |
+|---|---|---|
+| POST | `/api/login`, `/api/register` | công khai |
+| GET | `/api/me` | đăng nhập |
+| GET | `/api/home`, `/api/products`, `/api/products/:id` | công khai |
+| GET | `/api/pc-builder?cpuId=..&mainboardId=..` | công khai |
+| POST | `/api/chat` | công khai |
+| POST | `/api/checkout` | đăng nhập |
+| GET | `/api/orders/mine` | đăng nhập |
+| GET | `/api/admin` (tổng quan) | admin |
+| GET, POST | `/api/admin/products` | admin |
+| PUT, DELETE | `/api/admin/products/:id` | admin |
+| GET | `/api/admin/orders` | admin |
+| PUT | `/api/admin/orders/:id/status` | admin |
+
+## 🗃️ Cơ sở dữ liệu
+
+| Bảng | Nội dung |
 |---|---|
-| 🟢 Tốt | Cấu hình tương đối cân bằng |
-| 🟡 Nhẹ | Có chênh lệch nhưng vẫn sử dụng tốt |
-| 🟠 Trung bình | Một linh kiện có thể giới hạn hiệu năng đáng kể |
-| 🔴 Cao | Nên cân nhắc thay đổi cấu hình |
+| `users` | tài khoản (role: `admin` hoặc `customer`) |
+| `products` | linh kiện và PC build sẵn; cột `specs` là chuỗi JSON chứa thông số (socket, loại RAM, công suất...) |
+| `orders` | đơn hàng (trạng thái, tổng tiền, địa chỉ nhận) |
+| `order_items` | chi tiết từng đơn |
 
-Ví dụ:
-
-```text
-CPU: Ryzen 5 3600
-GPU: RTX 4080
-
-Kết quả:
-Bottleneck dự kiến: CPU
-
-Mức độ: Cao
-
-Nguyên nhân:
-CPU có hiệu năng thấp hơn đáng kể so với khả năng
-xử lý đồ họa của GPU trong một số workload.
-```
-
-> Phần trăm bottleneck nếu được sử dụng chỉ nên được xem là giá trị ước lượng, không phải kết quả benchmark tuyệt đối.
+Ảnh sản phẩm nằm ở `frontend/public/uploads/`, mỗi loại linh kiện dùng chung một ảnh. Cột `image` trong `products` lưu đường dẫn, ví dụ `/uploads/cpu.jpg`.
 
 ---
 
-## 🛠️ 7. Gợi ý cách khắc phục
+## 🌐 Triển khai
 
-Đây là phần quan trọng nhất của hệ thống.
+Frontend đăng lên **GitHub Pages**, backend cần đặt ở nơi chạy được Node.js (ví dụ Render).
 
-Website không chỉ báo:
-
-> "Cấu hình bị bottleneck."
-
-mà còn phải trả lời:
-
-> "Tại sao bị bottleneck và nên thay đổi gì?"
-
-Ví dụ:
-
-### Trường hợp CPU Bottleneck
-
-Hệ thống có thể gợi ý:
-
-- Nâng cấp CPU.
-- Chọn CPU có hiệu năng đơn nhân cao hơn.
-- Chọn GPU thấp hơn để tiết kiệm chi phí.
-- Giữ nguyên GPU nếu người dùng có kế hoạch nâng cấp CPU sau.
-
-### Trường hợp GPU Bottleneck
-
-Gợi ý:
-
-- Nâng cấp GPU.
-- Giảm thiết lập đồ họa.
-- Sử dụng công nghệ upscale nếu phù hợp.
-- Giảm độ phân giải.
-
-### Trường hợp thiếu RAM
-
-Gợi ý:
-
-```text
-RAM hiện tại: 8GB
-Khuyến nghị: 16GB
-
-→ Có thể nâng cấp thêm một thanh RAM tương thích.
-```
-
-### Trường hợp PSU không đủ
-
-Gợi ý:
-
-```text
-Công suất cấu hình ước tính: 610W
-PSU hiện tại: 600W
-
-⚠ Công suất dự phòng quá thấp.
-
-Khuyến nghị:
-750W hoặc cao hơn.
-```
+1. Triển khai thư mục `backend/` lên Render (Build: `npm install`, Start: `npm start`), đặt biến `JWT_SECRET`.
+2. Trên GitHub: Settings → Pages → Source chọn **GitHub Actions**.
+3. Settings → Secrets and variables → Actions → **Variables** → tạo biến `API_URL` có giá trị là địa chỉ backend.
+4. Push lên `main`, workflow `pages.yml` tự build và đăng frontend.
 
 ---
 
-## 💰 8. Gợi ý nâng cấp theo ngân sách
+## 👥 Phân công và quy ước làm việc
 
-Hệ thống có thể đưa ra nhiều phương án thay vì chỉ một lựa chọn.
+| Thành viên | Phụ trách | Nhánh |
+|---|---|---|
+| Thành viên 1 | CSS, Frontend, API (phía gọi), Login (giao diện) | `frontend` |
+| Thành viên 2 | Backend, Database, Test, MVC, JWT (phía server) | `backend` |
 
-Ví dụ:
-
-### Tiết kiệm
-
-```text
-Giữ CPU
-Đổi RTX 4070 → RTX 4060 Ti
-
-Chi phí giảm: ...
-Mức cân bằng tốt hơn.
-```
-
-### Cân bằng
-
-```text
-Đổi CPU → Ryzen 5 7600
-Giữ RTX 4070
-
-Chi phí tăng: ...
-Hiệu năng dự kiến tăng: ...
-```
-
-### Tối ưu hiệu năng
-
-```text
-CPU → Ryzen 7 ...
-GPU → ...
-RAM → 32GB
-
-Phù hợp với gaming / render / workload nặng.
-```
+- Mỗi người commit trên nhánh của mình, sau đó mở Pull Request vào `main`.
+- Message commit theo dạng `loại(phạm vi): mô tả`, ví dụ `feat(auth): xác thực JWT`. Các loại: `feat`, `fix`, `style`, `test`, `chore`, `ci`, `docs`.
+- Không commit `node_modules/`, `backend/data/`, `.env`, `dist/`.
 
 ---
 
-## 🎮 9. Gợi ý theo nhu cầu sử dụng
-
-Người dùng có thể chọn mục đích:
-
-- Gaming
-- Gaming 1080p
-- Gaming 1440p
-- Gaming 4K
-- Văn phòng
-- Học tập
-- Lập trình
-- Đồ họa
-- Render
-- Streaming
-- AI / Machine Learning
-
-Thuật toán đánh giá sẽ thay đổi trọng số tùy mục đích.
-
-Ví dụ:
-
-```text
-Gaming 1080p
-→ CPU có ảnh hưởng lớn hơn.
-
-Gaming 4K
-→ GPU thường trở thành yếu tố quan trọng hơn.
-
-Render
-→ CPU đa nhân, GPU và RAM có thể được ưu tiên.
-
-Văn phòng
-→ Không cần GPU quá mạnh.
-```
-
----
-
-## 🤖 10. Hệ thống Recommendation
-
-Từ cấu hình hiện tại, hệ thống có thể tìm sản phẩm khác trong database để đề xuất.
-
-Ví dụ:
-
-```text
-CPU hiện tại
-    ↓
-Phân tích socket + chipset
-    ↓
-Tìm CPU tương thích
-    ↓
-Lọc theo giá
-    ↓
-So sánh hiệu năng
-    ↓
-Đề xuất lựa chọn tốt hơn
-```
-
-Mỗi gợi ý cần đảm bảo:
-
-- Tương thích với cấu hình.
-- Nằm trong ngân sách.
-- Giảm bottleneck.
-- Có cải thiện hợp lý về hiệu năng.
-- Là sản phẩm đang tồn tại trong hệ thống.
-
----
-
-## 👤 11. Chức năng người dùng
-
-Người dùng có thể:
-
-- Đăng ký.
-- Đăng nhập.
-- Xem sản phẩm.
-- Tìm kiếm sản phẩm.
-- Lọc sản phẩm.
-- Xem chi tiết sản phẩm.
-- Thêm sản phẩm vào giỏ hàng.
-- Tạo cấu hình PC.
-- Lưu cấu hình.
-- Chỉnh sửa cấu hình.
-- Phân tích cấu hình.
-- Xem gợi ý nâng cấp.
-- Đặt hàng.
-- Xem lịch sử đơn hàng.
-
----
-
-## 🔐 12. Chức năng quản trị
-
-Admin có thể:
-
-- Quản lý tài khoản.
-- Quản lý sản phẩm.
-- Quản lý danh mục.
-- Quản lý thông số linh kiện.
-- Quản lý tồn kho.
-- Quản lý đơn hàng.
-- Quản lý dữ liệu benchmark.
-- Quản lý các luật tương thích.
-- Quản lý dữ liệu dùng cho thuật toán bottleneck.
-
----
-
-## 🧮 Ý tưởng thuật toán Bottleneck
-
-Phiên bản đầu có thể sử dụng **rule-based system viết bằng JavaScript chạy trên Node.js** thay vì AI.
-
-Phần thuật toán nên được tách riêng, ví dụ:
-
-```text
-services/
-├── compatibilityService.js
-├── bottleneckService.js
-├── recommendationService.js
-└── powerService.js
-```
-
-Controller chỉ nhận cấu hình từ người dùng rồi gọi các service tương ứng.
-
-Ví dụ:
-
-```text
-CPU_SCORE = điểm hiệu năng CPU
-GPU_SCORE = điểm hiệu năng GPU
-
-ratio = CPU_SCORE / GPU_SCORE
-```
-
-Sau đó kết hợp với:
-
-- Độ phân giải.
-- Mục đích sử dụng.
-- RAM.
-- Số nhân CPU.
-- VRAM.
-- Benchmark thực tế.
-
-Pseudo-code:
-
-```text
-if CPU quá yếu so với GPU:
-    bottleneck = CPU
-
-else if GPU quá yếu so với CPU:
-    bottleneck = GPU
-
-else:
-    bottleneck = Balanced
-```
-
-Sau này có thể phát triển thành:
-
-```text
-Benchmark Dataset
-       ↓
-Data Processing
-       ↓
-Scoring Model
-       ↓
-Bottleneck Prediction
-       ↓
-Recommendation Engine
-```
-
----
-
-## 🗃️ Dữ liệu cần lưu
-
-### Product
-
-```text
-id
-name
-category
-brand
-price
-stock
-description
-image
-```
-
-### CPU
-
-```text
-socket
-cores
-threads
-base_clock
-boost_clock
-tdp
-benchmark_score
-```
-
-### GPU
-
-```text
-vram
-tdp
-length
-benchmark_score
-```
-
-### Mainboard
-
-```text
-socket
-chipset
-ram_type
-max_ram
-```
-
-### RAM
-
-```text
-type
-capacity
-speed
-```
-
-### PSU
-
-```text
-wattage
-efficiency
-```
-
-### PC Build
-
-```text
-user_id
-cpu_id
-gpu_id
-mainboard_id
-ram_id
-storage_id
-psu_id
-case_id
-cooler_id
-total_price
-```
-
----
-
-## 🔄 Quy trình phân tích cấu hình
-
-```mermaid
-flowchart TD
-    A[Người dùng chọn linh kiện] --> B[Tạo PC Build]
-    B --> C[Kiểm tra Compatibility]
-    C -->|Không hợp lệ| D[Hiển thị lỗi và gợi ý thay thế]
-    C -->|Hợp lệ| E[Tính điểm từng linh kiện]
-    E --> F[Mô phỏng hiệu năng]
-    F --> G[Phân tích Bottleneck]
-    G --> H[Đánh giá mức độ]
-    H --> I[Tìm linh kiện thay thế]
-    I --> J[Đề xuất cách Fix / Upgrade]
-    J --> K[Người dùng hoàn thiện cấu hình]
-    K --> L[Thêm vào giỏ hàng / Đặt mua]
-```
-
----
-
-## 🚀 Hướng phát triển
-
-Các phiên bản sau có thể bổ sung:
-
-- Benchmark database.
-- So sánh FPS theo game.
-- Ước tính FPS ở 1080p / 1440p / 4K.
-- Ước tính điện năng tiêu thụ.
-- Ước tính nhiệt độ.
-- Chấm điểm Price / Performance.
-- Auto Build PC theo ngân sách.
-- Gợi ý cấu hình bằng AI.
-- So sánh hai cấu hình.
-- Chia sẻ cấu hình bằng link.
-- Cộng đồng đánh giá cấu hình.
-- Theo dõi lịch sử giá linh kiện.
-
----
+## 🔭 Hướng phát triển
+
+Các ý tưởng từ giai đoạn thiết kế ban đầu, **chưa được làm** trong phiên bản hiện tại:
+
+- 2D Interactive PC Builder: lắp linh kiện trực quan, bấm POWER để chạy mô phỏng (xem [IDEA_2D_PC_BUILDER_SIMULATION.md](IDEA_2D_PC_BUILDER_SIMULATION.md)).
+- Phân tích bottleneck CPU/GPU/RAM/PSU và gợi ý nâng cấp theo ngân sách.
+- Lưu cấu hình PC của người dùng, ước tính FPS và điện năng.
+- Băm mật khẩu bằng bcrypt, phân trang sản phẩm, thanh toán trực tuyến.
+- Chuyển sang MySQL nếu cần chạy nhiều người dùng cùng lúc.
 
 ## ⚠️ Lưu ý
-
-Kết quả mô phỏng và bottleneck chỉ mang tính **ước lượng và hỗ trợ lựa chọn linh kiện**.
-
-Hiệu năng thực tế còn phụ thuộc vào nhiều yếu tố:
-
-- Game / phần mềm.
-- Độ phân giải.
-- Setting.
-- Driver.
-- Hệ điều hành.
-- Nhiệt độ.
-- BIOS.
-- RAM.
-- Tản nhiệt.
-- Khả năng boost của CPU/GPU.
-
-Vì vậy hệ thống không nên khẳng định một con số bottleneck là chính xác tuyệt đối.
-
----
-
-## 📌 Tóm tắt
-
-**Bán Linh Kiện & Mô Phỏng PC** hướng tới việc kết hợp ba hệ thống trong cùng một website:
-
-```text
-E-Commerce
-    +
-PC Builder
-    +
-PC Performance Advisor
-```
-
-Người dùng không chỉ **mua linh kiện**, mà còn có thể biết:
-
-- Các linh kiện có lắp được với nhau hay không.
-- Cấu hình có cân bằng hay không.
-- Thành phần nào đang giới hạn hiệu năng.
-- Vì sao xảy ra bottleneck.
-- Nên thay linh kiện nào.
-- Phương án nào phù hợp nhất với ngân sách và nhu cầu.
+- Trợ lý tư vấn và kiểm tra tương thích dựa trên luật đơn giản, chỉ mang tính tham khảo.
+- Dữ liệu sản phẩm là dữ liệu mẫu phục vụ học tập.
