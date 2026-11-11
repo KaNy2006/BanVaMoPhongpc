@@ -1,7 +1,7 @@
 {
   "name": "kada-store-backend",
   "version": "1.0.0",
-  "description": "KaDa Store API - Express + SQLite + JWT (MVC giống Computer-store-main)",
+  "description": "KaDa Store API - Express + SQLite + JWT",
   "main": "app.js",
   "private": true,
   "type": "commonjs",
