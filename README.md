@@ -5,7 +5,6 @@ Website bán linh kiện máy tính và PC build sẵn, có công cụ **PC Buil
 Dự án gồm có **frontend React** và **backend Express** giao tiếp qua REST API, xác thực bằng **JWT**.
 
 - Trang web (GitHub Pages): https://kany2006.github.io/BanVaMoPhongpc/
-- Ý tưởng mở rộng (2D PC Builder, bottleneck): xem [IDEA_2D_PC_BUILDER_SIMULATION.md](IDEA_2D_PC_BUILDER_SIMULATION.md)
 
 ---
 
@@ -115,7 +114,6 @@ cd backend  && npm install && npm start
 cd frontend && npm install && npm run dev
 ```
 
-Cơ sở dữ liệu tự tạo ở `backend/data/kada.db` từ `schema.sql` và `seed.sql` khi chạy lần đầu. Muốn đưa dữ liệu về ban đầu: tắt backend, xóa file `backend/data/kada.db`, chạy lại.
 
 ### Tài khoản mẫu
 | Vai trò | Email | Mật khẩu |
@@ -188,7 +186,6 @@ Frontend đăng lên **GitHub Pages**, backend cần đặt ở nơi chạy đư
 
 Các ý tưởng từ giai đoạn thiết kế ban đầu, **chưa được làm** trong phiên bản hiện tại:
 
-- 2D Interactive PC Builder: lắp linh kiện trực quan, bấm POWER để chạy mô phỏng (xem [IDEA_2D_PC_BUILDER_SIMULATION.md](IDEA_2D_PC_BUILDER_SIMULATION.md)).
 - Phân tích bottleneck CPU/GPU/RAM/PSU và gợi ý nâng cấp theo ngân sách.
 - Lưu cấu hình PC của người dùng, ước tính FPS và điện năng.
 - Băm mật khẩu bằng bcrypt, phân trang sản phẩm, thanh toán trực tuyến.
