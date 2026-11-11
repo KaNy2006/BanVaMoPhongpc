@@ -2,7 +2,7 @@
 
 Website bán linh kiện máy tính và PC build sẵn, có công cụ **PC Builder** tự kiểm tra tương thích linh kiện và **trợ lý tư vấn** gợi ý bộ PC theo ngân sách.
 
-Dự án phát triển từ bài mẫu **Computer-store** (Node.js + Express + EJS + MySQL), nay tách thành **frontend React** và **backend Express** giao tiếp qua REST API, xác thực bằng **JWT**.
+Dự án gồm có **frontend React** và **backend Express** giao tiếp qua REST API, xác thực bằng **JWT**.
 
 - Trang web (GitHub Pages): https://kany2006.github.io/BanVaMoPhongpc/
 - Ý tưởng mở rộng (2D PC Builder, bottleneck): xem [IDEA_2D_PC_BUILDER_SIMULATION.md](IDEA_2D_PC_BUILDER_SIMULATION.md)
@@ -181,14 +181,8 @@ Frontend đăng lên **GitHub Pages**, backend cần đặt ở nơi chạy đư
 
 | Thành viên | Phụ trách | Nhánh |
 |---|---|---|
-| Thành viên 1 | CSS, Frontend, API (phía gọi), Login (giao diện) | `frontend` |
-| Thành viên 2 | Backend, Database, Test, MVC, JWT (phía server) | `backend` |
-
-- Mỗi người commit trên nhánh của mình, sau đó mở Pull Request vào `main`.
-- Message commit theo dạng `loại(phạm vi): mô tả`, ví dụ `feat(auth): xác thực JWT`. Các loại: `feat`, `fix`, `style`, `test`, `chore`, `ci`, `docs`.
-- Không commit `node_modules/`, `backend/data/`, `.env`, `dist/`.
-
----
+| Đạo | CSS, Frontend, API (phía gọi), Login (giao diện) | `frontend` |
+| Khánh | Backend, Database, Test, MVC, JWT (phía server) | `backend` |
 
 ## 🔭 Hướng phát triển
 
