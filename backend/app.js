@@ -1,11 +1,11 @@
-// Điểm vào của backend (giống app.js của Computer-store-main nhưng chỉ trả JSON, không render EJS).
+// Điểm vào của backend 
 // Luồng: request -> app.js -> routes/web.js | routes/admin.js -> controller -> model -> SQLite
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
 
-// Đọc file .env (giữ nguyên cách làm của file gốc)
+// Đọc file .env 
 const envPath = path.join(__dirname, ".env");
 if (fs.existsSync(envPath)) {
   fs.readFileSync(envPath, "utf8").split(/\r?\n/).forEach((line) => {
