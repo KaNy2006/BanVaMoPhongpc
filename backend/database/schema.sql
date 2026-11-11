@@ -1,4 +1,3 @@
--- Cấu trúc bảng (giống database/schema.sql của Computer-store-main, đổi sang cú pháp SQLite)
 CREATE TABLE IF NOT EXISTS users (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
